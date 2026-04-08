@@ -26,6 +26,10 @@ from typing import Any, Dict, List, Optional
 
 from openai import OpenAI
 
+import sys
+from pathlib import Path
+sys.path.insert(0, str(Path(__file__).parent.parent))
+
 from webrtc_ops_env import WebRTCOpsEnv
 
 # ── Configuration ──────────────────────────────────────────────────
@@ -206,7 +210,10 @@ def get_model_action(
 
 async def run_task(client: OpenAI, task_name: str) -> float:
     """Run a single task and return its final score."""
-    env = await WebRTCOpsEnv.from_docker_image(IMAGE_NAME)
+    if IMAGE_NAME and "/" in IMAGE_NAME:
+        env = await WebRTCOpsEnv.from_env(IMAGE_NAME)
+    else:
+        env = await WebRTCOpsEnv.from_docker_image(IMAGE_NAME or "webrtc-ops-env")
 
     history: List[str] = []
     rewards: List[float] = []

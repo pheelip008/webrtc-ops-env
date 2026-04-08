@@ -74,6 +74,7 @@ def main():
         ("client.py", "client.py"),
         ("openenv.yaml", "openenv.yaml"),
         ("pyproject.toml", "pyproject.toml"),
+        ("uv.lock", "uv.lock"),
         (".dockerignore", ".dockerignore"),
         ("server/__init__.py", "server/__init__.py"),
         ("server/app.py", "server/app.py"),
