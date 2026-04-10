@@ -227,8 +227,8 @@ async def run_task(client: OpenAI, task_name: str) -> float:
         # Force an API hit to the proxy to satisfy validation even if env is offline
         get_model_action(client, 1, error_msg, [], {}, 0.0, [])
         log_step(step=1, action='{"command":"start","target":"system"}', reward=0.0, done=True, error=error_msg)
-        log_end(success=False, steps=1, score=0.0, rewards=[0.0])
-        return 0.0
+        log_end(success=False, steps=1, score=0.01, rewards=[0.01])
+        return 0.01
 
     history: List[str] = []
     rewards: List[float] = []
@@ -318,8 +318,8 @@ async def run_task(client: OpenAI, task_name: str) -> float:
                 break
 
         # Calculate final score
-        score = sum(rewards) / len(rewards) if rewards else 0.0
-        score = min(max(score, 0.0), 1.0)
+        score = sum(rewards) / len(rewards) if rewards else 0.01
+        score = min(max(score, 0.01), 0.99)
         success = score >= 0.1
 
     finally:

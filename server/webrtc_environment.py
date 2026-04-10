@@ -268,34 +268,34 @@ def _generate_metrics(state: WebRTCInternalState) -> Dict[str, Any]:
 # ─────────────────────────────────────────────────────────────────────
 
 def _grade_port_mismatch(state: WebRTCInternalState) -> float:
-    """Score: 1.0 if port is fixed AND service restarted."""
+    """Score: 0.99 if port is fixed AND service restarted."""
     if state.config.get("port") == state.client_expected_port and state.service_restarted_since_fix:
-        return 1.0
-    return 0.0
+        return 0.99
+    return 0.01
 
 
 def _grade_sdp_codec_clash(state: WebRTCInternalState) -> float:
-    """Score: 1.0 if Opus is in allowed_codecs and audio bitrate recovered."""
+    """Score: 0.99 if Opus is in allowed_codecs and audio bitrate recovered."""
     codecs = state.config.get("allowed_codecs", [])
     user1 = state.peer_connections.get("user_1", {})
     if "PCMU" in codecs or "Opus" in codecs:
         if user1.get("audio_bitrate", 0) >= 48:
-            return 1.0
-    return 0.0
+            return 0.99
+    return 0.01
 
 
 def _grade_congestion_degradation(state: WebRTCInternalState) -> float:
-    """Partial scoring: +0.5 for TURN relay, +0.5 for bitrate adjustment."""
-    score = 0.0
+    """Partial scoring: +0.49 for TURN relay, +0.49 for bitrate adjustment."""
+    score = 0.01
     user3 = state.peer_connections.get("user_3", {})
 
     if user3.get("relay_type") in ("relay", "TURN"):
-        score += 0.5
+        score += 0.49
 
     if user3.get("bitrate", 2500) <= 500:
-        score += 0.5
+        score += 0.49
 
-    return score
+    return min(score, 0.99)
 
 
 GRADERS = {
