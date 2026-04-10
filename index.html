@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Operations Simulator</title>
+    <!-- Modern clean typography -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="glass-header">
+            <div class="header-left">
+                <i data-lucide="activity" class="text-blue"></i>
+                <div class="header-titles">
+                    <h1>WebRTC Operations Agent</h1>
+                    <span class="badge">OpenEnv Simulation</span>
+                </div>
+            </div>
+            <div class="header-right">
+                <select id="task-selector" class="task-dropdown">
+                    <option value="hard">Level 3: Congestion (Hard)</option>
+                    <option value="medium">Level 2: Codec Clash (Medium)</option>
+                    <option value="easy">Level 1: Port Mismatch (Easy)</option>
+                </select>
+                <div class="status-indicator">
+                    <span class="pulse-dot"></span>
+                    <span id="env-status">Environment Offline</span>
+                </div>
+                <button id="start-btn" class="primary-btn">
+                    <i data-lucide="play"></i> Start Inference
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Workspace -->
+        <main class="dashboard-grid">
+            
+            <!-- Left Panel: Agent Terminal -->
+            <section class="panel glass-panel">
+                <div class="panel-header">
+                    <h2><i data-lucide="terminal"></i> Agent Action Stream</h2>
+                    <span class="model-badge">Qwen2.5-72B</span>
+                </div>
+                <div class="terminal-container" id="terminal-output">
+                    <div class="log-line text-muted">Initialize OpenEnv Session...</div>
+                    <div class="log-line text-muted">Agent connection standby.</div>
+                </div>
+            </section>
+
+            <!-- Center Panel: Network Graph -->
+            <section class="panel glass-panel">
+                <div class="panel-header">
+                    <h2><i data-lucide="network"></i> Network Telemetry</h2>
+                    <div id="grade-badge" class="badge hidden">Score: 1.0</div>
+                </div>
+                <div class="graph-container">
+                    <!-- Central Server Node -->
+                    <div class="node server-node">
+                        <i data-lucide="server"></i>
+                        <span>MCU/SFU</span>
+                    </div>
+
+                    <!-- User Nodes (Positioned via CSS) -->
+                    <div class="node user-node stable" id="node-user_1" style="top: 15%; left: 15%;">
+                        <div class="node-label">User 1</div>
+                        <div class="node-metric" id="metric-user_1">Loss: 1.2%</div>
+                    </div>
+                    <div class="node user-node stable" id="node-user_2" style="top: 15%; right: 15%;">
+                        <div class="node-label">User 2</div>
+                        <div class="node-metric" id="metric-user_2">Loss: 0.8%</div>
+                    </div>
+                    
+                    <!-- The Degraded Node -->
+                    <div class="node user-node degraded pulse-error" id="node-user_3" style="bottom: 15%; right: 15%;">
+                        <div class="node-label">User 3</div>
+                        <div class="node-metric" id="metric-user_3">Loss: 35.0%</div>
+                        <div class="relay-tag" id="relay-user_3">host</div>
+                    </div>
+                    
+                    <div class="node user-node stable" id="node-user_4" style="bottom: 15%; left: 15%;">
+                        <div class="node-label">User 4</div>
+                        <div class="node-metric" id="metric-user_4">Loss: 2.0%</div>
+                    </div>
+
+                    <!-- SVG Lines connecting nodes to server -->
+                    <svg class="connections">
+                        <line x1="15%" y1="15%" x2="50%" y2="50%" class="line-stable" />
+                        <line x1="85%" y1="15%" x2="50%" y2="50%" class="line-stable" />
+                        <line x1="85%" y1="85%" x2="50%" y2="50%" class="line-degraded error-anim" id="line-user_3" />
+                        <line x1="15%" y1="85%" x2="50%" y2="50%" class="line-stable" />
+                    </svg>
+                </div>
+                <div class="metrics-bar">
+                    <div class="metric"><span class="label">Task:</span> <strong class="text-dark">congestion_degradation</strong></div>
+                    <div class="metric"><span class="label">P2P Health:</span> <strong id="health-status" class="text-error">Critical</strong></div>
+                </div>
+            </section>
+
+            <!-- Right Panel: Configurations -->
+            <section class="panel glass-panel">
+                <div class="panel-header">
+                    <h2><i data-lucide="file-code"></i> signaling.yaml</h2>
+                </div>
+                <div class="config-container">
+                    <pre><code id="config-code" class="language-yaml">port: 8080
+host: '0.0.0.0'
+tls: true
+log_level: 'warn'
+max_connections: 500
+ice_servers:
+  - urls: 'stun:stun.example.com:3478'
+  - urls: 'turn:turn.example.com:3478'</code></pre>
+                </div>
+                <div class="live-event-flyout" id="action-flyout">
+                    <i data-lucide="zap"></i> <span id="action-text"></span>
+                </div>
+            </section>
+
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>

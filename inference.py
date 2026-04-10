@@ -33,10 +33,13 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 from webrtc_ops_env import WebRTCOpsEnv
 
 # ── Configuration ──────────────────────────────────────────────────
+API_BASE_URL = os.getenv("API_BASE_URL", "https://router.huggingface.co/v1")
+MODEL_NAME = os.getenv("MODEL_NAME", "Qwen/Qwen2.5-72B-Instruct")
+HF_TOKEN = os.getenv("HF_TOKEN")
+API_KEY = HF_TOKEN or os.getenv("API_KEY")
+
+LOCAL_IMAGE_NAME = os.getenv("LOCAL_IMAGE_NAME")
 IMAGE_NAME = os.getenv("IMAGE_NAME")
-API_KEY = os.getenv("HF_TOKEN") or os.getenv("API_KEY")
-API_BASE_URL = os.getenv("API_BASE_URL") or "https://router.huggingface.co/v1"
-MODEL_NAME = os.getenv("MODEL_NAME") or "Qwen/Qwen2.5-72B-Instruct"
 
 BENCHMARK = "webrtc_ops_env"
 MAX_STEPS = 10
@@ -210,10 +213,16 @@ def get_model_action(
 
 async def run_task(client: OpenAI, task_name: str) -> float:
     """Run a single task and return its final score."""
-    if IMAGE_NAME and "/" in IMAGE_NAME:
-        env = await WebRTCOpsEnv.from_env(IMAGE_NAME)
-    else:
-        env = await WebRTCOpsEnv.from_docker_image(IMAGE_NAME or "webrtc-ops-env")
+    try:
+        if LOCAL_IMAGE_NAME:
+            env = await WebRTCOpsEnv.from_docker_image(LOCAL_IMAGE_NAME)
+        elif IMAGE_NAME and "/" in IMAGE_NAME and "hf.space" not in IMAGE_NAME:
+            env = await WebRTCOpsEnv.from_env(IMAGE_NAME)
+        else:
+            env = await WebRTCOpsEnv.from_docker_image(IMAGE_NAME or "webrtc-ops-env")
+    except Exception as e:
+        print(f"[ERROR] Failed to start environment: {e}", flush=True)
+        return 0.0
 
     history: List[str] = []
     rewards: List[float] = []
