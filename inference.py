@@ -213,6 +213,8 @@ def get_model_action(
 
 async def run_task(client: OpenAI, task_name: str) -> float:
     """Run a single task and return its final score."""
+    log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
+
     try:
         if LOCAL_IMAGE_NAME:
             env = await WebRTCOpsEnv.from_docker_image(LOCAL_IMAGE_NAME)
@@ -221,7 +223,10 @@ async def run_task(client: OpenAI, task_name: str) -> float:
         else:
             env = await WebRTCOpsEnv.from_docker_image(IMAGE_NAME or "webrtc-ops-env")
     except Exception as e:
-        print(f"[ERROR] Failed to start environment: {e}", flush=True)
+        error_msg = f"Failed to start environment: {e}"
+        print(f"[DEBUG] {error_msg}", flush=True)
+        log_step(step=1, action='{"command":"start","target":"system"}', reward=0.0, done=True, error=error_msg)
+        log_end(success=False, steps=1, score=0.0, rewards=[0.0])
         return 0.0
 
     history: List[str] = []
@@ -229,8 +234,6 @@ async def run_task(client: OpenAI, task_name: str) -> float:
     steps_taken = 0
     score = 0.0
     success = False
-
-    log_start(task=task_name, env=BENCHMARK, model=MODEL_NAME)
 
     try:
         result = await env.reset(task_name=task_name)
